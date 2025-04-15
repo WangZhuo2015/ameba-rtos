@@ -12,13 +12,10 @@ import shutil
 import subprocess
 import sys
 
-separator = " ; " if sys.platform != "win32" else " & "
-LOONG_SDK_VENV_DIR = '.venv'
-LOONG_SDK_PIP_REQUIREMENTS_PATH = 'tools/requirements.txt'
-LOONG_SDK_GIT_HOOKS_SRC_DIR = 'tools/meta_tools/git_hooks'
-LOONG_SDK_GIT_HOOKS_TGT_DIR = '.repo/repo/hooks'
+from scripts.base.Const import *
+from scripts.base.EnvUtils import run_command, is_repo_workspace, is_git_workspace
 
-CMD_CLEAN_GIT_WORKSPACE="git reset --hard && git clean -fd"
+CMD_CLEAN_GIT_WORKSPACE = "git reset --hard && git clean -fd"
 CMD_GIT_UPDATE = 'git pull'
 CMD_REPO_UPDATE = 'repo sync'
 CMD_REPO_LIST = "repo list | awk '{print $1}'"
@@ -28,10 +25,6 @@ CMD_RM_PRE_COMMIT_HOOKS = 'find .repo/ -name "pre-commit" | grep -v ".repo/repo/
 CMD_RM_COMMIT_MSG_HOOKS = 'find .repo/ -name "commit-msg" | grep -v ".repo/repo/hooks/" | xargs rm'
 
 GIT_HOOKS_SYNC_FAIL_MSG = 'Not replacing locally modified'
-
-
-def run_shell_cmd_with_output(cmd):
-    return subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
 
 def update_git_hooks():
@@ -50,15 +43,15 @@ def update_git_hooks():
         sys.exit(2)
 
     print('Sync Git hooks to repositories...')
-    rc = run_shell_cmd_with_output(CMD_REPO_UPDATE + ' 2>&1')
+    rc = run_command(CMD_REPO_UPDATE + ' 2>&1', True)
     if rc.returncode != 0:
         print('Error: Fail to sync Git hooks to repositories')
         sys.exit(2)
     elif GIT_HOOKS_SYNC_FAIL_MSG in rc.stdout:
         print('Warning: Fail to sync Git hooks, retry')
-        run_shell_cmd_with_output(CMD_RM_PRE_COMMIT_HOOKS)
-        run_shell_cmd_with_output(CMD_RM_COMMIT_MSG_HOOKS)
-        rc = run_shell_cmd_with_output(CMD_REPO_UPDATE + ' 2>&1')
+        run_command(CMD_RM_PRE_COMMIT_HOOKS, True)
+        run_command(CMD_RM_COMMIT_MSG_HOOKS, True)
+        rc = run_command(CMD_REPO_UPDATE + ' 2>&1')
         if rc.returncode != 0:
             print('Error: Fail to sync Git hooks to repositories')
             print(rc.stdout)
@@ -77,18 +70,13 @@ def check_venv():
         # Create virtual environment if it does not exist
         try:
             print("Python virtual environment does not exist")
+            import venv
             venv.create(LOONG_SDK_VENV_DIR)
             print("Python virtual environment created")
         except:
             print("Error: Fail to create Python virtual environment")
             sys.exit(2)
 
-
-def is_repo_workspace():
-    return os.path.exists('.repo') and os.path.isdir('.repo')
-
-def is_git_workspace():
-    return os.path.exists('.git') and os.path.isdir('.git')
 
 def main(argc, argv):
     parser = argparse.ArgumentParser(description=None)
@@ -120,45 +108,31 @@ def main(argc, argv):
     else:
         pass
 
-    cmd = ''
-    if venv:
-        cmd_activate_venv = None
-        cmd_deactivate_venv = None
-        if os.name == 'nt':
-            cmd_activate_venv = os.path.join(LOONG_SDK_VENV_DIR, 'Scripts', 'activate.bat')
-            cmd_deactivate_venv = os.path.join(LOONG_SDK_VENV_DIR, 'Scripts', 'deactivate.bat')
-        else:
-            cmd_activate_venv = 'source ' + os.path.join(LOONG_SDK_VENV_DIR, 'bin', 'activate')
-            cmd_deactivate_venv = 'deactivate'
-        cmd += cmd_activate_venv + ' && '
-    else:
-        pass
+    # Update workspace
+    workspace_update_return_code = 0
     if no_vcs_flag:
         print('Warning: workspace update will be skipped because no VCS was detected.')
     else:
-        cmd += 'echo "Update workspace..." && ' + (CMD_REPO_UPDATE if is_repo_workspace() else CMD_GIT_UPDATE) + separator + ' ; echo "Update workspace done" && '
-    cmd += 'echo "Install Python requirements..." && ' + CMD_INSTALL_LOONG_REQUIREMENTS + ' && echo "Install Python requirements done"'
+        print('Update workspace...')
+        result = run_command(CMD_REPO_UPDATE if is_repo_workspace() else CMD_GIT_UPDATE, use_venv=venv)
+        workspace_update_return_code = result.returncode
+        if result.returncode != 0:
+            print('Error: Fail to update workspace')
+        else:
+            print('Update workspace done')
 
-    rc = 0
-    try:
-        print(cmd)
-        rc = os.system(cmd)
-    except:
-        rc = 1
+    # Install Python requirements
+    print('Install Python requirements...')
+    pip_install_result = run_command(CMD_INSTALL_LOONG_REQUIREMENTS, use_venv=venv)
+    print('Install Python requirements done')
 
-    if venv:
-        run_shell_cmd_with_output(cmd_deactivate_venv)
-    else:
-        pass
-
-    if rc != 0:
-        print("Error: Set up Loong SDK failed (" + str(rc) + ")")
+    if workspace_update_return_code != 0 or pip_install_result.returncode != 0:
+        print(f"Error: Set up Loong SDK failed ({workspace_update_return_code}) ({pip_install_result.returncode})")
         sys.exit(2)
     else:
         pass
 
-    rc = is_repo_workspace()
-    if args.update_git_hooks and rc:
+    if args.update_git_hooks and is_repo_workspace():
         print("Update Git hooks...")
         update_git_hooks()
         print("Update Git hooks done")
@@ -166,6 +140,7 @@ def main(argc, argv):
         pass
 
     print("Set up Loong SDK done")
+
 
 if __name__ == '__main__':
     main(len(sys.argv), sys.argv[1:])

@@ -1,0 +1,6 @@
+LOONG_SDK_VENV_DIR = '.venv'
+LOONG_SDK_TOOLCHAIN_DEFAULT_PATH_WINDOWS = 'C:\\msys64\\opt\\rtk-toolchain'
+LOONG_SDK_TOOLCHAIN_DEFAULT_PATH_LINUX = '/opt/rtk-toolchain'
+LOONG_SDK_PIP_REQUIREMENTS_PATH = 'tools/requirements.txt'
+LOONG_SDK_GIT_HOOKS_SRC_DIR = 'tools/meta_tools/git_hooks'
+LOONG_SDK_GIT_HOOKS_TGT_DIR = '.repo/repo/hooks'

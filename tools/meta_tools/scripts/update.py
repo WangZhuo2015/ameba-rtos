@@ -11,6 +11,8 @@ import shutil
 import subprocess
 import sys
 
+from scripts.base.EnvUtils import is_repo_workspace, is_git_workspace, run_command
+
 LOONG_SDK_GIT_HOOKS_SRC_DIR = 'tools/meta_tools/git_hooks'
 LOONG_SDK_GIT_HOOKS_TGT_DIR = '.repo/repo/hooks'
 
@@ -23,10 +25,6 @@ CMD_RM_PRE_COMMIT_HOOKS = 'find .repo/ -name "pre-commit" | grep -v ".repo/repo/
 CMD_RM_COMMIT_MSG_HOOKS = 'find .repo/ -name "commit-msg" | grep -v ".repo/repo/hooks/" | xargs rm'
 
 GIT_HOOKS_SYNC_FAIL_MSG = 'Not replacing locally modified'
-
-
-def run_shell_cmd_with_output(cmd):
-    return subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
 
 def update_git_hooks():
@@ -45,15 +43,15 @@ def update_git_hooks():
         sys.exit(2)
 
     print('Sync Git hooks to repositories...')
-    rc = run_shell_cmd_with_output(CMD_REPO_UPDATE + ' 2>&1')
+    rc = run_command(CMD_REPO_UPDATE + ' 2>&1', capture_output=True)
     if rc.returncode != 0:
         print('Error: Fail to sync Git hooks to repositories')
         sys.exit(2)
     elif GIT_HOOKS_SYNC_FAIL_MSG in rc.stdout:
         print('Warning: Fail to sync Git hooks, retry')
-        run_shell_cmd_with_output(CMD_RM_PRE_COMMIT_HOOKS)
-        run_shell_cmd_with_output(CMD_RM_COMMIT_MSG_HOOKS)
-        rc = run_shell_cmd_with_output(CMD_REPO_UPDATE + ' 2>&1')
+        run_command(CMD_RM_PRE_COMMIT_HOOKS, capture_output=True)
+        run_command(CMD_RM_COMMIT_MSG_HOOKS, capture_output=True)
+        rc = run_command(CMD_REPO_UPDATE + ' 2>&1', capture_output=True)
         if rc.returncode != 0:
             print('Error: Fail to sync Git hooks to repositories')
             print(rc.stdout)
@@ -63,12 +61,6 @@ def update_git_hooks():
     else:
         pass
 
-
-def is_repo_workspace():
-    return os.path.exists('.repo') and os.path.isdir('.repo')
-
-def is_git_workspace():
-    return os.path.exists('.git') and os.path.isdir('.git')
 
 def main(argc, argv):
     parser = argparse.ArgumentParser(description=None)
