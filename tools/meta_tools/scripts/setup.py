@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 
+separator = " ; " if sys.platform != "win32" else " & "
 LOONG_SDK_VENV_DIR = '.venv'
 LOONG_SDK_PIP_REQUIREMENTS_PATH = 'tools/requirements.txt'
 LOONG_SDK_GIT_HOOKS_SRC_DIR = 'tools/meta_tools/git_hooks'
@@ -132,11 +133,10 @@ def main(argc, argv):
         cmd += cmd_activate_venv + ' && '
     else:
         pass
-
     if no_vcs_flag:
         print('Warning: workspace update will be skipped because no VCS was detected.')
     else:
-        cmd += 'echo "Update workspace..." && ' + (CMD_REPO_UPDATE if is_repo_workspace() else CMD_GIT_UPDATE) + ' ; echo "Update workspace done" ; '
+        cmd += 'echo "Update workspace..." && ' + (CMD_REPO_UPDATE if is_repo_workspace() else CMD_GIT_UPDATE) + separator + ' ; echo "Update workspace done" && '
     cmd += 'echo "Install Python requirements..." && ' + CMD_INSTALL_LOONG_REQUIREMENTS + ' && echo "Install Python requirements done"'
 
     rc = 0
