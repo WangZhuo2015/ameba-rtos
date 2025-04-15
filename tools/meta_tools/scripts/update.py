@@ -14,6 +14,8 @@ import sys
 LOONG_SDK_GIT_HOOKS_SRC_DIR = 'tools/meta_tools/git_hooks'
 LOONG_SDK_GIT_HOOKS_TGT_DIR = '.repo/repo/hooks'
 
+CMD_CLEAN_GIT_WORKSPACE="git reset --hard && git clean -fd"
+CMD_GIT_UPDATE = 'git pull'
 CMD_CLEAN_WORKSPACE = "repo forall -c 'git reset --hard && git clean -fd'"
 CMD_REPO_UPDATE = 'repo sync'
 CMD_REPO_LIST = "repo list | awk '{print $1}'"
@@ -65,6 +67,8 @@ def update_git_hooks():
 def is_repo_workspace():
     return os.path.exists('.repo') and os.path.isdir('.repo')
 
+def is_git_workspace():
+    return os.path.exists('.git') and os.path.isdir('.git')
 
 def main(argc, argv):
     parser = argparse.ArgumentParser(description=None)
@@ -80,18 +84,25 @@ def main(argc, argv):
         sys.exit(1)
 
     print('Update...')
-
+    no_vcs_flag = not is_repo_workspace() and not is_git_workspace()
     if args.pristine:
-        print('Clean workspace...')
-        os.system(CMD_CLEAN_WORKSPACE)
+        print("Clean workspace...")
+        if is_repo_workspace():
+            os.system(CMD_CLEAN_WORKSPACE)
+        elif is_git_workspace():
+            os.system(CMD_CLEAN_GIT_WORKSPACE)
+        else:
+            print("Warning: No VCS detected, the 'pristine' argument will be ignored.")
+        print("Clean workspace done")
     else:
         pass
 
     print('Update workspace...')
-    os.system(CMD_REPO_UPDATE)
+    os.system(CMD_REPO_UPDATE if is_repo_workspace() else CMD_GIT_UPDATE)
 
-    print('Update Git hooks...')
-    update_git_hooks()
+    if is_repo_workspace():
+        print('Update Git hooks...')
+        update_git_hooks()
 
     print('Update done')
 

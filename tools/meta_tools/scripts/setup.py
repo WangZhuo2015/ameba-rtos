@@ -17,6 +17,8 @@ LOONG_SDK_PIP_REQUIREMENTS_PATH = 'tools/requirements.txt'
 LOONG_SDK_GIT_HOOKS_SRC_DIR = 'tools/meta_tools/git_hooks'
 LOONG_SDK_GIT_HOOKS_TGT_DIR = '.repo/repo/hooks'
 
+CMD_CLEAN_GIT_WORKSPACE="git reset --hard && git clean -fd"
+CMD_GIT_UPDATE = 'git pull'
 CMD_REPO_UPDATE = 'repo sync'
 CMD_REPO_LIST = "repo list | awk '{print $1}'"
 CMD_INSTALL_LOONG_REQUIREMENTS = 'pip install -r ' + LOONG_SDK_PIP_REQUIREMENTS_PATH
@@ -84,6 +86,8 @@ def check_venv():
 def is_repo_workspace():
     return os.path.exists('.repo') and os.path.isdir('.repo')
 
+def is_git_workspace():
+    return os.path.exists('.git') and os.path.isdir('.git')
 
 def main(argc, argv):
     parser = argparse.ArgumentParser(description=None)
@@ -94,10 +98,15 @@ def main(argc, argv):
     args = parser.parse_args()
 
     print("Set up...")
-
+    no_vcs_flag = not is_repo_workspace() and not is_git_workspace()
     if args.pristine:
         print("Clean workspace...")
-        os.system(CMD_CLEAN_WORKSPACE)
+        if is_repo_workspace():
+            os.system(CMD_CLEAN_WORKSPACE)
+        elif is_git_workspace():
+            os.system(CMD_CLEAN_GIT_WORKSPACE)
+        else:
+            print("Warning: No VCS detected, the 'pristine' argument will be ignored.")
         print("Clean workspace done")
     else:
         pass
@@ -123,7 +132,11 @@ def main(argc, argv):
         cmd += cmd_activate_venv + ' && '
     else:
         pass
-    cmd += 'echo "Update workspace..." && ' + CMD_REPO_UPDATE + ' && echo "Update workspace done" && '
+
+    if no_vcs_flag:
+        print('Warning: workspace update will be skipped because no VCS was detected.')
+    else:
+        cmd += 'echo "Update workspace..." && ' + CMD_REPO_UPDATE if is_repo_workspace() else CMD_GIT_UPDATE + ' ; echo "Update workspace done" ; '
     cmd += 'echo "Install Python requirements..." && ' + CMD_INSTALL_LOONG_REQUIREMENTS + ' && echo "Install Python requirements done"'
 
     rc = 0
