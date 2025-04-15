@@ -136,11 +136,12 @@ def main(argc, argv):
     if no_vcs_flag:
         print('Warning: workspace update will be skipped because no VCS was detected.')
     else:
-        cmd += 'echo "Update workspace..." && ' + CMD_REPO_UPDATE if is_repo_workspace() else CMD_GIT_UPDATE + ' ; echo "Update workspace done" ; '
+        cmd += 'echo "Update workspace..." && ' + (CMD_REPO_UPDATE if is_repo_workspace() else CMD_GIT_UPDATE) + ' ; echo "Update workspace done" ; '
     cmd += 'echo "Install Python requirements..." && ' + CMD_INSTALL_LOONG_REQUIREMENTS + ' && echo "Install Python requirements done"'
 
     rc = 0
     try:
+        print(cmd)
         rc = os.system(cmd)
     except:
         rc = 1
