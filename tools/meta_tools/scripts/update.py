@@ -11,7 +11,7 @@ import shutil
 import subprocess
 import sys
 
-from scripts.base.EnvUtils import is_repo_workspace, is_git_workspace, run_command
+from base.EnvUtils import is_repo_workspace, is_git_workspace, run_command
 
 LOONG_SDK_GIT_HOOKS_SRC_DIR = 'tools/meta_tools/git_hooks'
 LOONG_SDK_GIT_HOOKS_TGT_DIR = '.repo/repo/hooks'

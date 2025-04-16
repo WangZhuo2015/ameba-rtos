@@ -1,7 +1,7 @@
 import subprocess
 import os
 
-from scripts.base.Const import *
+from base.Const import *
 
 
 def run_command(command, capture_output=False, use_venv=False, venv_path=LOONG_SDK_VENV_DIR):
@@ -21,8 +21,7 @@ def run_command(command, capture_output=False, use_venv=False, venv_path=LOONG_S
         full_command = command
 
     # 执行命令
-    result = subprocess.run(full_command, shell=True, capture_output=capture_output, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, text=True)
+    result = subprocess.run(full_command, shell=True, capture_output=capture_output, text=True)
     return result
 
 

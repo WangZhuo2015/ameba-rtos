@@ -12,8 +12,8 @@ import shutil
 import subprocess
 import sys
 
-from scripts.base.Const import *
-from scripts.base.EnvUtils import run_command, is_repo_workspace, is_git_workspace
+from base.Const import *
+from base.EnvUtils import run_command, is_repo_workspace, is_git_workspace
 
 CMD_CLEAN_GIT_WORKSPACE = "git reset --hard && git clean -fd"
 CMD_GIT_UPDATE = 'git pull'
@@ -114,7 +114,7 @@ def main(argc, argv):
         print('Warning: workspace update will be skipped because no VCS was detected.')
     else:
         print('Update workspace...')
-        result = run_command(CMD_REPO_UPDATE if is_repo_workspace() else CMD_GIT_UPDATE, use_venv=venv)
+        result = run_command(CMD_REPO_UPDATE if is_repo_workspace() else CMD_GIT_UPDATE, capture_output=True, use_venv=venv)
         workspace_update_return_code = result.returncode
         if result.returncode != 0:
             print('Error: Fail to update workspace')
@@ -123,14 +123,17 @@ def main(argc, argv):
 
     # Install Python requirements
     print('Install Python requirements...')
-    pip_install_result = run_command(CMD_INSTALL_LOONG_REQUIREMENTS, use_venv=venv)
+    pip_install_result = run_command(CMD_INSTALL_LOONG_REQUIREMENTS, capture_output=True, use_venv=venv)
     print('Install Python requirements done')
 
-    if workspace_update_return_code != 0 or pip_install_result.returncode != 0:
-        print(f"Error: Set up Loong SDK failed ({workspace_update_return_code}) ({pip_install_result.returncode})")
+    if not no_vcs_flag and workspace_update_return_code != 0:
+        # when return code is not 0, result must be defined
+        print(f"Error: Workspace update failed (code: {workspace_update_return_code}). Details: {str(result.stderr)}")
         sys.exit(2)
-    else:
-        pass
+
+    if pip_install_result.returncode != 0:
+        print(f"Error: pip install failed (code: {pip_install_result.returncode}). Details: {pip_install_result.stderr}")
+        sys.exit(2)
 
     if args.update_git_hooks and is_repo_workspace():
         print("Update Git hooks...")

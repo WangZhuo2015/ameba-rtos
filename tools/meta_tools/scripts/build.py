@@ -13,7 +13,7 @@ import shutil
 import subprocess
 import sys
 
-from scripts.base.Const import LOONG_SDK_VENV_DIR
+from base.Const import LOONG_SDK_VENV_DIR
 
 LOONG_SDK_QUERY_CFG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'query.json')
 LOONG_SDK_DEFAULT_IMAGE_DIR = 'images'
