@@ -137,7 +137,7 @@ def do_query_info(sdkroot, cfg):
         info['manifest'] = item.getAttribute('name')
         info['manifestDir'] = None
 
-        rc = run_command(CMD_GET_MANIFEST_URL, capture_output=True)
+        rc = run_command(CMD_GET_MANIFEST_URL, show_output=True)
         if rc.returncode == 0:
             info['url'] = rc.stdout.strip()
         else:

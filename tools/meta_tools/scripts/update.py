@@ -43,15 +43,15 @@ def update_git_hooks():
         sys.exit(2)
 
     print('Sync Git hooks to repositories...')
-    rc = run_command(CMD_REPO_UPDATE + ' 2>&1', capture_output=True)
+    rc = run_command(CMD_REPO_UPDATE + ' 2>&1', show_output=True)
     if rc.returncode != 0:
         print('Error: Fail to sync Git hooks to repositories')
         sys.exit(2)
     elif GIT_HOOKS_SYNC_FAIL_MSG in rc.stdout:
         print('Warning: Fail to sync Git hooks, retry')
-        run_command(CMD_RM_PRE_COMMIT_HOOKS, capture_output=True)
-        run_command(CMD_RM_COMMIT_MSG_HOOKS, capture_output=True)
-        rc = run_command(CMD_REPO_UPDATE + ' 2>&1', capture_output=True)
+        run_command(CMD_RM_PRE_COMMIT_HOOKS, show_output=True)
+        run_command(CMD_RM_COMMIT_MSG_HOOKS, show_output=True)
+        rc = run_command(CMD_REPO_UPDATE + ' 2>&1', show_output=True)
         if rc.returncode != 0:
             print('Error: Fail to sync Git hooks to repositories')
             print(rc.stdout)

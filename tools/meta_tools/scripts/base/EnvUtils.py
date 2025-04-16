@@ -4,7 +4,7 @@ import os
 from base.Const import *
 
 
-def run_command(command, capture_output=False, use_venv=False, venv_path=LOONG_SDK_VENV_DIR):
+def run_command(command, show_output=False, use_venv=False, venv_path=LOONG_SDK_VENV_DIR):
     if venv_path is None:
         venv_path = os.getenv('LOONG_SDK_VENV_DIR', '.')
 
@@ -21,7 +21,10 @@ def run_command(command, capture_output=False, use_venv=False, venv_path=LOONG_S
         full_command = command
 
     # 执行命令
-    result = subprocess.run(full_command, shell=True, capture_output=capture_output, text=True)
+    if show_output:
+        result = subprocess.run(full_command, shell=True, text=True)
+    else:
+        result = subprocess.run(full_command, shell=True, capture_output=True, text=True)
     return result
 
 
