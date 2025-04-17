@@ -47,7 +47,7 @@ def update_git_hooks():
     if rc.returncode != 0:
         print('Error: Fail to sync Git hooks to repositories')
         sys.exit(2)
-    elif GIT_HOOKS_SYNC_FAIL_MSG in rc.stdout:
+    elif GIT_HOOKS_SYNC_FAIL_MSG in (rc.stdout or ""):
         print('Warning: Fail to sync Git hooks, retry')
         run_command(CMD_RM_PRE_COMMIT_HOOKS, show_output=True)
         run_command(CMD_RM_COMMIT_MSG_HOOKS, show_output=True)
@@ -68,15 +68,14 @@ def main(argc, argv):
 
     args = parser.parse_args()
 
-    rc = is_repo_workspace()
-    if rc:
-        pass
-    else:
-        print('Warning: Invalid repo workspace, ignored')
+    no_vcs_flag = not is_repo_workspace() and not is_git_workspace()
+    if no_vcs_flag:
+        print('Warning: Invalid repo or git workspace, ignored')
         sys.exit(1)
+    else:
+        pass
 
     print('Update...')
-    no_vcs_flag = not is_repo_workspace() and not is_git_workspace()
     if args.pristine:
         print("Clean workspace...")
         if is_repo_workspace():
@@ -84,6 +83,7 @@ def main(argc, argv):
         elif is_git_workspace():
             os.system(CMD_CLEAN_GIT_WORKSPACE)
         else:
+            # Should not reach here, because of the 'no_vcs_flag' check
             print("Warning: No VCS detected, the 'pristine' argument will be ignored.")
         print("Clean workspace done")
     else:
