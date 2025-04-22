@@ -11,9 +11,7 @@ import os
 import subprocess
 import sys
 
-
-LOONG_CONFIG_SCRIPTS_DIR = 'menuconfig'
-LOONG_SDK_QUERY_CFG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'query.json')
+from base.rtk_const import *
 
 
 def run_command(workspace, script, argv=None):

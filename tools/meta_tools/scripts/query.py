@@ -7,19 +7,11 @@
 import argparse
 import json
 import os
-import subprocess
-import sys
 import uuid
 import xml.dom.minidom
 
-from base.EnvUtils import run_command
-
-LOONG_SDK_BRIEF_DESC = 'Realtek Loong FreeRTOS SDK'
-LOONG_SDK_MANIFEST_FILE = os.path.join('.repo', 'manifest.xml')
-LOONG_SDK_QUERY_CFG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'query.json')
-LOONG_SDK_APP_FILE = 'main.c'
-
-CMD_GET_MANIFEST_URL = "cat .repo/manifests.git/config | grep -m 1 url | cut -d\"=\" -f 2"
+from base.rtk_env_utils import run_command
+from base.rtk_const import *
 
 
 def do_query_app(sdkroot, cfg):

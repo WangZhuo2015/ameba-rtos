@@ -11,20 +11,8 @@ import shutil
 import subprocess
 import sys
 
-from base.EnvUtils import is_repo_workspace, is_git_workspace, run_command
-
-LOONG_SDK_GIT_HOOKS_SRC_DIR = 'tools/meta_tools/git_hooks'
-LOONG_SDK_GIT_HOOKS_TGT_DIR = '.repo/repo/hooks'
-
-CMD_CLEAN_GIT_WORKSPACE="git reset --hard && git clean -fd"
-CMD_GIT_UPDATE = 'git pull'
-CMD_CLEAN_WORKSPACE = "repo forall -c 'git reset --hard && git clean -fd'"
-CMD_REPO_UPDATE = 'repo sync'
-CMD_REPO_LIST = "repo list | awk '{print $1}'"
-CMD_RM_PRE_COMMIT_HOOKS = 'find .repo/ -name "pre-commit" | grep -v ".repo/repo/hooks/" | xargs rm'
-CMD_RM_COMMIT_MSG_HOOKS = 'find .repo/ -name "commit-msg" | grep -v ".repo/repo/hooks/" | xargs rm'
-
-GIT_HOOKS_SYNC_FAIL_MSG = 'Not replacing locally modified'
+from base.rtk_env_utils import is_repo_workspace, is_git_workspace, run_command
+from base.rtk_const import *
 
 
 def update_git_hooks():

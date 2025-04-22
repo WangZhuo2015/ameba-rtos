@@ -13,13 +13,7 @@ import shutil
 import subprocess
 import sys
 
-from base.Const import LOONG_SDK_VENV_DIR
-
-LOONG_SDK_QUERY_CFG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'query.json')
-LOONG_SDK_DEFAULT_IMAGE_DIR = 'images'
-LOONG_SDK_DEFAULT_BUILD_DIR = 'build'
-LOONG_SDK_TOOLCHAIN_DEFAULT_PATH_WINDOWS = 'C:\\msys64\\opt\\rtk-toolchain'
-LOONG_SDK_TOOLCHAIN_DEFAULT_PATH_LINUX = '/opt/rtk-toolchain'
+from base.rtk_const import *
 
 
 def run_shell_cmd_with_output(cmd):

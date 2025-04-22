@@ -1,7 +1,13 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Copyright (c) 2025 Realtek Semiconductor Corp.
+# SPDX-License-Identifier: Apache-2.0 
+
 import subprocess
 import os
 
-from base.Const import *
+from base.rtk_const import *
 
 
 def run_command(command, show_output=False, use_venv=False, venv_path=LOONG_SDK_VENV_DIR):
